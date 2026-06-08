@@ -2,11 +2,19 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 const assignments = [
-  { title: '経済学レポート', deadline: '2026-06-20' },
-  { title: '英語課題', deadline: '2026-06-15' },
+  { id: 'initial-assignment-1', title: '経済学レポート', deadline: '2026-06-20' },
+  { id: 'initial-assignment-2', title: '英語課題', deadline: '2026-06-15' },
 ]
 const ASSIGNMENTS_STORAGE_KEY = 'assignmentList'
 const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+const createAssignmentId = () => {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+
+  return `assignment-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+}
 
 const normalizeDeadline = (deadline) => {
   if (DATE_INPUT_PATTERN.test(deadline)) {
@@ -24,6 +32,7 @@ const normalizeDeadline = (deadline) => {
 
 const normalizeAssignments = (items) =>
   items.map((assignment) => ({
+    id: assignment.id ?? createAssignmentId(),
     ...assignment,
     deadline: normalizeDeadline(assignment.deadline),
     completed: assignment.completed ?? false,
@@ -31,6 +40,29 @@ const normalizeAssignments = (items) =>
 
 const formatDeadlineParts = (year, month, day) =>
   `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
+
+const getAssignmentAlertStatus = (assignment) => {
+  if (assignment.completed) {
+    return 'normal'
+  }
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
+  const deadline = new Date(`${assignment.deadline}T00:00:00`)
+  const millisecondsPerDay = 1000 * 60 * 60 * 24
+  const daysUntilDeadline = Math.floor((deadline - today) / millisecondsPerDay)
+
+  if (daysUntilDeadline < 0) {
+    return 'overdue'
+  }
+
+  if (daysUntilDeadline <= 3) {
+    return 'urgent'
+  }
+
+  return 'normal'
+}
 
 function App() {
   const [assignmentList, setAssignmentList] = useState(() => {
@@ -73,6 +105,7 @@ function App() {
     }
 
     const newAssignment = {
+      id: createAssignmentId(),
       title: taskTitle.trim(),
       deadline: formatDeadlineParts(year, month, day),
       completed: false,
@@ -87,23 +120,14 @@ function App() {
 
   const handleDeleteAssignment = (assignmentToDelete) => {
     setAssignmentList((currentAssignments) =>
-      currentAssignments.filter(
-        (assignment) =>
-          !(
-            assignment.title === assignmentToDelete.title &&
-            assignment.deadline === assignmentToDelete.deadline
-          )
-      )
+      currentAssignments.filter((assignment) => assignment.id !== assignmentToDelete.id)
     )
   }
 
   const handleToggleCompleted = (assignmentToToggle) => {
     setAssignmentList((currentAssignments) =>
       currentAssignments.map((assignment) => {
-        if (
-          assignment.title === assignmentToToggle.title &&
-          assignment.deadline === assignmentToToggle.deadline
-        ) {
+        if (assignment.id === assignmentToToggle.id) {
           return {
             ...assignment,
             completed: !assignment.completed,
@@ -192,36 +216,44 @@ function App() {
           </div>
 
           <div className="assignment-list">
-            {assignmentList.map((assignment) => (
-              <article
-                className={`assignment-item${assignment.completed ? ' assignment-item-completed' : ''}`}
-                key={`${assignment.title}-${assignment.deadline}`}
-              >
-                <div className="assignment-item-header">
-                  <div className="assignment-item-title-group">
-                    <h3>{assignment.title}</h3>
-                    {assignment.completed && <span className="completed-badge">提出済み</span>}
+            {assignmentList.map((assignment) => {
+              const alertStatus = getAssignmentAlertStatus(assignment)
+
+              return (
+                <article
+                  className={`assignment-item${assignment.completed ? ' assignment-item-completed' : ''}${alertStatus === 'urgent' ? ' assignment-item-urgent' : ''}${alertStatus === 'overdue' ? ' assignment-item-overdue' : ''}`}
+                  key={assignment.id}
+                >
+                  <div className="assignment-item-header">
+                    <div className="assignment-item-title-group">
+                      <h3>{assignment.title}</h3>
+                      <div className="assignment-item-badges">
+                        {assignment.completed && <span className="completed-badge">提出済み</span>}
+                        {alertStatus === 'urgent' && <span className="urgent-badge">締切間近</span>}
+                        {alertStatus === 'overdue' && <span className="overdue-badge">期限切れ</span>}
+                      </div>
+                    </div>
+                    <div className="assignment-item-actions">
+                      <button
+                        type="button"
+                        className={`toggle-button${assignment.completed ? ' toggle-button-completed' : ''}`}
+                        onClick={() => handleToggleCompleted(assignment)}
+                      >
+                        {assignment.completed ? '未提出に戻す' : '提出済みにする'}
+                      </button>
+                      <button
+                        type="button"
+                        className="delete-button"
+                        onClick={() => handleDeleteAssignment(assignment)}
+                      >
+                        削除
+                      </button>
+                    </div>
                   </div>
-                  <div className="assignment-item-actions">
-                    <button
-                      type="button"
-                      className={`toggle-button${assignment.completed ? ' toggle-button-completed' : ''}`}
-                      onClick={() => handleToggleCompleted(assignment)}
-                    >
-                      {assignment.completed ? '未提出に戻す' : '提出済みにする'}
-                    </button>
-                    <button
-                      type="button"
-                      className="delete-button"
-                      onClick={() => handleDeleteAssignment(assignment)}
-                    >
-                      削除
-                    </button>
-                  </div>
-                </div>
-                <p>締切：{assignment.deadline}</p>
-              </article>
-            ))}
+                  <p>締切：{assignment.deadline}</p>
+                </article>
+              )
+            })}
           </div>
         </section>
       </section>
