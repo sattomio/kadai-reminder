@@ -64,6 +64,24 @@ const getAssignmentAlertStatus = (assignment) => {
   return 'normal'
 }
 
+const getAssignmentSortRank = (assignment) => {
+  if (assignment.completed) {
+    return 3
+  }
+
+  const alertStatus = getAssignmentAlertStatus(assignment)
+
+  if (alertStatus === 'overdue') {
+    return 0
+  }
+
+  if (alertStatus === 'urgent') {
+    return 1
+  }
+
+  return 2
+}
+
 function App() {
   const [assignmentList, setAssignmentList] = useState(() => {
     const savedAssignments = localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
@@ -138,6 +156,20 @@ function App() {
       })
     )
   }
+
+  const sortedAssignments = [...assignmentList].sort((leftAssignment, rightAssignment) => {
+    const rankDifference =
+      getAssignmentSortRank(leftAssignment) - getAssignmentSortRank(rightAssignment)
+
+    if (rankDifference !== 0) {
+      return rankDifference
+    }
+
+    return (
+      new Date(`${leftAssignment.deadline}T00:00:00`) -
+      new Date(`${rightAssignment.deadline}T00:00:00`)
+    )
+  })
 
   return (
     <main className="app">
@@ -216,7 +248,7 @@ function App() {
           </div>
 
           <div className="assignment-list">
-            {assignmentList.map((assignment) => {
+            {sortedAssignments.map((assignment) => {
               const alertStatus = getAssignmentAlertStatus(assignment)
 
               return (
