@@ -79,7 +79,7 @@
 
 .assignment-form {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(180px, 1fr) auto;
+  grid-template-columns: minmax(0, 1.5fr) minmax(240px, 1.2fr) minmax(140px, 0.8fr) auto;
   gap: 16px;
   align-items: end;
 }
@@ -146,6 +146,10 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: #475569;
+}
+
+.time-field input {
+  min-width: 0;
 }
 
 .assignment-form-button {

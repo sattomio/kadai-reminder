@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import './App.css'
 
 const assignments = [
-  { id: 'initial-assignment-1', title: '経済学レポート', deadline: '2026-06-20' },
-  { id: 'initial-assignment-2', title: '英語課題', deadline: '2026-06-15' },
+  { id: 'initial-assignment-1', title: '経済学レポート', deadline: '2026-06-20 23:59' },
+  { id: 'initial-assignment-2', title: '英語課題', deadline: '2026-06-15 23:59' },
 ]
 const ASSIGNMENTS_STORAGE_KEY = 'assignmentList'
 const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
+const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
+const DEFAULT_DEADLINE_TIME = '23:59'
 
 const createAssignmentId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -17,14 +20,18 @@ const createAssignmentId = () => {
 }
 
 const normalizeDeadline = (deadline) => {
-  if (DATE_INPUT_PATTERN.test(deadline)) {
+  if (DATE_TIME_PATTERN.test(deadline)) {
     return deadline
   }
 
-  const duplicatedDateMatch = deadline.match(/^(\d{4})\d{2}(-\d{2}-\d{2})$/)
+  if (DATE_INPUT_PATTERN.test(deadline)) {
+    return `${deadline} ${DEFAULT_DEADLINE_TIME}`
+  }
 
-  if (duplicatedDateMatch) {
-    return `${duplicatedDateMatch[1]}${duplicatedDateMatch[2]}`
+  const duplicatedDateTimeMatch = deadline.match(/^(\d{4})\d{2}(-\d{2}-\d{2})(?: (\d{2}:\d{2}))?$/)
+
+  if (duplicatedDateTimeMatch) {
+    return `${duplicatedDateTimeMatch[1]}${duplicatedDateTimeMatch[2]} ${duplicatedDateTimeMatch[3] ?? DEFAULT_DEADLINE_TIME}`
   }
 
   return deadline
@@ -41,23 +48,26 @@ const normalizeAssignments = (items) =>
 const formatDeadlineParts = (year, month, day) =>
   `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`
 
+const formatDeadline = (year, month, day, time) =>
+  `${formatDeadlineParts(year, month, day)} ${TIME_INPUT_PATTERN.test(time) ? time : DEFAULT_DEADLINE_TIME}`
+
+const getDeadlineDate = (deadline) => new Date(normalizeDeadline(deadline).replace(' ', 'T'))
+
 const getAssignmentAlertStatus = (assignment) => {
   if (assignment.completed) {
     return 'normal'
   }
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0)
-
-  const deadline = new Date(`${assignment.deadline}T00:00:00`)
+  const deadline = getDeadlineDate(assignment.deadline)
+  const millisecondsUntilDeadline = deadline - today
   const millisecondsPerDay = 1000 * 60 * 60 * 24
-  const daysUntilDeadline = Math.floor((deadline - today) / millisecondsPerDay)
 
-  if (daysUntilDeadline < 0) {
+  if (millisecondsUntilDeadline < 0) {
     return 'overdue'
   }
 
-  if (daysUntilDeadline <= 3) {
+  if (millisecondsUntilDeadline <= millisecondsPerDay * 3) {
     return 'urgent'
   }
 
@@ -100,6 +110,7 @@ function App() {
   const [year, setYear] = useState('')
   const [month, setMonth] = useState('')
   const [day, setDay] = useState('')
+  const [time, setTime] = useState(DEFAULT_DEADLINE_TIME)
 
   useEffect(() => {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
@@ -117,6 +128,10 @@ function App() {
     setDay(event.target.value.replace(/\D/g, '').slice(0, 2))
   }
 
+  const handleTimeChange = (event) => {
+    setTime(event.target.value)
+  }
+
   const handleAddAssignment = () => {
     if (!taskTitle.trim() || !year || !month || !day) {
       return
@@ -125,7 +140,7 @@ function App() {
     const newAssignment = {
       id: createAssignmentId(),
       title: taskTitle.trim(),
-      deadline: formatDeadlineParts(year, month, day),
+      deadline: formatDeadline(year, month, day, time),
       completed: false,
     }
 
@@ -134,6 +149,7 @@ function App() {
     setYear('')
     setMonth('')
     setDay('')
+    setTime(DEFAULT_DEADLINE_TIME)
   }
 
   const handleDeleteAssignment = (assignmentToDelete) => {
@@ -165,10 +181,7 @@ function App() {
       return rankDifference
     }
 
-    return (
-      new Date(`${leftAssignment.deadline}T00:00:00`) -
-      new Date(`${rightAssignment.deadline}T00:00:00`)
-    )
+    return getDeadlineDate(leftAssignment.deadline) - getDeadlineDate(rightAssignment.deadline)
   })
 
   return (
@@ -229,6 +242,11 @@ function App() {
                 />
                 <span className="date-field-unit">日</span>
               </div>
+            </label>
+
+            <label className="form-field time-field">
+              <span>締切時間</span>
+              <input type="time" name="time" value={time} onChange={handleTimeChange} />
             </label>
 
             <button
