@@ -43,6 +43,7 @@ const normalizeAssignments = (items) =>
     ...assignment,
     deadline: normalizeDeadline(assignment.deadline),
     completed: assignment.completed ?? false,
+    detail: assignment.detail ?? '',
   }))
 
 const formatDeadlineParts = (year, month, day) =>
@@ -111,6 +112,7 @@ function App() {
   const [month, setMonth] = useState('')
   const [day, setDay] = useState('')
   const [time, setTime] = useState(DEFAULT_DEADLINE_TIME)
+  const [detail, setDetail] = useState('')
 
   useEffect(() => {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
@@ -142,6 +144,7 @@ function App() {
       title: taskTitle.trim(),
       deadline: formatDeadline(year, month, day, time),
       completed: false,
+      detail: detail.trim(),
     }
 
     setAssignmentList((currentAssignments) => [...currentAssignments, newAssignment])
@@ -150,6 +153,7 @@ function App() {
     setMonth('')
     setDay('')
     setTime(DEFAULT_DEADLINE_TIME)
+    setDetail('')
   }
 
   const handleDeleteAssignment = (assignmentToDelete) => {
@@ -249,6 +253,16 @@ function App() {
               <input type="time" name="time" value={time} onChange={handleTimeChange} />
             </label>
 
+            <label className="form-field detail-field">
+              <span>詳細</span>
+              <textarea
+                name="detail"
+                placeholder="提出先、課題内容、メモなど"
+                value={detail}
+                onChange={(event) => setDetail(event.target.value)}
+              />
+            </label>
+
             <button
               type="button"
               className="add-button assignment-form-button"
@@ -304,6 +318,7 @@ function App() {
                     <span className="assignment-deadline-label">締切：</span>
                     <span className="assignment-deadline-value">{assignment.deadline}</span>
                   </p>
+                  {assignment.detail && <p className="assignment-detail">{assignment.detail}</p>}
                 </article>
               )
             })}

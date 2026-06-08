@@ -120,6 +120,32 @@
   color: #94a3b8;
 }
 
+.form-field textarea {
+  width: 100%;
+  min-height: 112px;
+  padding: 14px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  box-sizing: border-box;
+  resize: vertical;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-field textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.form-field textarea::placeholder {
+  color: #94a3b8;
+}
+
 .date-fields {
   display: flex;
   gap: 8px;
@@ -150,6 +176,10 @@
 
 .time-field input {
   min-width: 0;
+}
+
+.detail-field {
+  grid-column: 1 / -2;
 }
 
 .assignment-form-button {
@@ -294,6 +324,18 @@
   color: #475569;
 }
 
+.assignment-detail {
+  margin-top: 10px;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: #475569;
+  white-space: pre-wrap;
+}
+
+.assignment-item-completed .assignment-detail {
+  color: #64748b;
+}
+
 .completed-badge {
   display: inline-flex;
   align-items: center;
@@ -419,6 +461,10 @@
 
   .assignment-form {
     grid-template-columns: 1fr;
+  }
+
+  .detail-field {
+    grid-column: auto;
   }
 
   .date-fields {
