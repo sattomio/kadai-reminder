@@ -21,10 +21,6 @@
 }
 
 .app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
   margin-bottom: 32px;
 }
 
@@ -124,6 +120,34 @@
   color: #94a3b8;
 }
 
+.date-fields {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.date-fields input {
+  flex: 1 1 0;
+}
+
+.date-fields input[name='year'] {
+  min-width: 112px;
+}
+
+.date-fields input[name='month'],
+.date-fields input[name='day'] {
+  min-width: 72px;
+  max-width: 88px;
+}
+
+.date-field-unit {
+  flex: 0 0 auto;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #475569;
+}
+
 .assignment-form-button {
   min-height: 52px;
 }
@@ -138,6 +162,7 @@
 .section-heading {
   display: flex;
   justify-content: space-between;
+  gap: 8px;
   align-items: center;
   gap: 12px;
   margin-bottom: 20px;
@@ -196,11 +221,6 @@
     border-radius: 20px;
   }
 
-  .app-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .add-button {
     width: 100%;
     justify-content: center;
@@ -208,6 +228,10 @@
 
   .assignment-form {
     grid-template-columns: 1fr;
+  }
+
+  .date-fields {
+    width: 100%;
   }
 
   .assignment-section {
