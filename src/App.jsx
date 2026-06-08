@@ -26,6 +26,7 @@ const normalizeAssignments = (items) =>
   items.map((assignment) => ({
     ...assignment,
     deadline: normalizeDeadline(assignment.deadline),
+    completed: assignment.completed ?? false,
   }))
 
 const formatDeadlineParts = (year, month, day) =>
@@ -74,6 +75,7 @@ function App() {
     const newAssignment = {
       title: taskTitle.trim(),
       deadline: formatDeadlineParts(year, month, day),
+      completed: false,
     }
 
     setAssignmentList((currentAssignments) => [...currentAssignments, newAssignment])
@@ -92,6 +94,24 @@ function App() {
             assignment.deadline === assignmentToDelete.deadline
           )
       )
+    )
+  }
+
+  const handleToggleCompleted = (assignmentToToggle) => {
+    setAssignmentList((currentAssignments) =>
+      currentAssignments.map((assignment) => {
+        if (
+          assignment.title === assignmentToToggle.title &&
+          assignment.deadline === assignmentToToggle.deadline
+        ) {
+          return {
+            ...assignment,
+            completed: !assignment.completed,
+          }
+        }
+
+        return assignment
+      })
     )
   }
 
@@ -173,16 +193,31 @@ function App() {
 
           <div className="assignment-list">
             {assignmentList.map((assignment) => (
-              <article className="assignment-item" key={`${assignment.title}-${assignment.deadline}`}>
+              <article
+                className={`assignment-item${assignment.completed ? ' assignment-item-completed' : ''}`}
+                key={`${assignment.title}-${assignment.deadline}`}
+              >
                 <div className="assignment-item-header">
-                  <h3>{assignment.title}</h3>
-                  <button
-                    type="button"
-                    className="delete-button"
-                    onClick={() => handleDeleteAssignment(assignment)}
-                  >
-                    削除
-                  </button>
+                  <div className="assignment-item-title-group">
+                    <h3>{assignment.title}</h3>
+                    {assignment.completed && <span className="completed-badge">提出済み</span>}
+                  </div>
+                  <div className="assignment-item-actions">
+                    <button
+                      type="button"
+                      className={`toggle-button${assignment.completed ? ' toggle-button-completed' : ''}`}
+                      onClick={() => handleToggleCompleted(assignment)}
+                    >
+                      {assignment.completed ? '未提出に戻す' : '提出済みにする'}
+                    </button>
+                    <button
+                      type="button"
+                      className="delete-button"
+                      onClick={() => handleDeleteAssignment(assignment)}
+                    >
+                      削除
+                    </button>
+                  </div>
                 </div>
                 <p>締切：{assignment.deadline}</p>
               </article>

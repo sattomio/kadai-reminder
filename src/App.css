@@ -199,6 +199,11 @@
   background: #ffffff;
 }
 
+.assignment-item-completed {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+}
+
 .assignment-item-header {
   display: flex;
   justify-content: space-between;
@@ -207,16 +212,89 @@
   margin-bottom: 8px;
 }
 
+.assignment-item-title-group {
+  display: grid;
+  gap: 8px;
+}
+
 .assignment-item h3 {
   margin: 0;
   font-size: 1.2rem;
   color: #0f172a;
 }
 
+.assignment-item-completed h3 {
+  color: #64748b;
+  text-decoration: line-through;
+}
+
 .assignment-item p {
   margin: 0;
   font-size: 1rem;
   color: #475569;
+}
+
+.assignment-item-completed p {
+  color: #94a3b8;
+}
+
+.completed-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #166534;
+  background: #dcfce7;
+}
+
+.assignment-item-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.toggle-button {
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #1d4ed8;
+  background: #eff6ff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.toggle-button:hover {
+  border-color: #93c5fd;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.toggle-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 3px;
+}
+
+.toggle-button-completed {
+  border-color: #bbf7d0;
+  color: #166534;
+  background: #f0fdf4;
+}
+
+.toggle-button-completed:hover {
+  border-color: #86efac;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .delete-button {
@@ -285,5 +363,9 @@
   .assignment-item-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .assignment-item-actions {
+    justify-content: stretch;
   }
 }
