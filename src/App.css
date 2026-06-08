@@ -69,6 +69,65 @@
   outline-offset: 3px;
 }
 
+.assignment-form-section {
+  margin-bottom: 24px;
+  padding: 28px;
+  border: 1px solid #dbe4f0;
+  border-radius: 20px;
+  background: #f8fbff;
+}
+
+.assignment-form-heading {
+  margin-bottom: 20px;
+}
+
+.assignment-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(180px, 1fr) auto;
+  gap: 16px;
+  align-items: end;
+}
+
+.form-field {
+  display: grid;
+  gap: 8px;
+}
+
+.form-field span {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.form-field input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 14px;
+  font: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.form-field input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.form-field input::placeholder {
+  color: #94a3b8;
+}
+
+.assignment-form-button {
+  min-height: 52px;
+}
+
 .assignment-section {
   padding: 28px;
   border: 1px solid #dbe4f0;
@@ -147,7 +206,15 @@
     justify-content: center;
   }
 
+  .assignment-form {
+    grid-template-columns: 1fr;
+  }
+
   .assignment-section {
+    padding: 20px;
+  }
+
+  .assignment-form-section {
     padding: 20px;
   }
 

@@ -19,6 +19,28 @@ function App() {
           </button>
         </header>
 
+        <section className="assignment-form-section" aria-labelledby="assignment-form-title">
+          <div className="section-heading assignment-form-heading">
+            <h2 id="assignment-form-title">課題を追加</h2>
+          </div>
+
+          <form className="assignment-form">
+            <label className="form-field">
+              <span>課題名</span>
+              <input type="text" name="title" placeholder="例：情報科学レポート" />
+            </label>
+
+            <label className="form-field">
+              <span>締切日</span>
+              <input type="date" name="deadline" />
+            </label>
+
+            <button type="button" className="add-button assignment-form-button">
+              追加
+            </button>
+          </form>
+        </section>
+
         <section className="assignment-section" aria-labelledby="pending-title">
           <div className="section-heading">
             <h2 id="pending-title">未提出課題</h2>
