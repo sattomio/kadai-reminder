@@ -255,8 +255,43 @@
   color: #475569;
 }
 
-.assignment-item-completed p {
-  color: #94a3b8;
+.assignment-deadline {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+.assignment-deadline-label {
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.assignment-deadline-value {
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.01em;
+}
+
+.assignment-item-urgent .assignment-deadline-label,
+.assignment-item-urgent .assignment-deadline-value {
+  color: #b91c1c;
+}
+
+.assignment-item-overdue .assignment-deadline-label,
+.assignment-item-overdue .assignment-deadline-value {
+  color: #991b1b;
+}
+
+.assignment-item-completed .assignment-deadline {
+  color: #64748b;
+}
+
+.assignment-item-completed .assignment-deadline-label {
+  color: #64748b;
+}
+
+.assignment-item-completed .assignment-deadline-value {
+  color: #475569;
 }
 
 .completed-badge {

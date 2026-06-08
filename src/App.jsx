@@ -300,7 +300,10 @@ function App() {
                       </button>
                     </div>
                   </div>
-                  <p>締切：{assignment.deadline}</p>
+                  <p className="assignment-deadline">
+                    <span className="assignment-deadline-label">締切：</span>
+                    <span className="assignment-deadline-value">{assignment.deadline}</span>
+                  </p>
                 </article>
               )
             })}
