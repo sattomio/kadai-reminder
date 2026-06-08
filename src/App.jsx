@@ -83,6 +83,18 @@ function App() {
     setDay('')
   }
 
+  const handleDeleteAssignment = (assignmentToDelete) => {
+    setAssignmentList((currentAssignments) =>
+      currentAssignments.filter(
+        (assignment) =>
+          !(
+            assignment.title === assignmentToDelete.title &&
+            assignment.deadline === assignmentToDelete.deadline
+          )
+      )
+    )
+  }
+
   return (
     <main className="app">
       <section className="app-card">
@@ -162,7 +174,16 @@ function App() {
           <div className="assignment-list">
             {assignmentList.map((assignment) => (
               <article className="assignment-item" key={`${assignment.title}-${assignment.deadline}`}>
-                <h3>{assignment.title}</h3>
+                <div className="assignment-item-header">
+                  <h3>{assignment.title}</h3>
+                  <button
+                    type="button"
+                    className="delete-button"
+                    onClick={() => handleDeleteAssignment(assignment)}
+                  >
+                    削除
+                  </button>
+                </div>
                 <p>締切：{assignment.deadline}</p>
               </article>
             ))}
