@@ -113,6 +113,7 @@ function App() {
   const [day, setDay] = useState('')
   const [time, setTime] = useState(DEFAULT_DEADLINE_TIME)
   const [detail, setDetail] = useState('')
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
@@ -186,6 +187,18 @@ function App() {
     }
 
     return getDeadlineDate(leftAssignment.deadline) - getDeadlineDate(rightAssignment.deadline)
+  })
+
+  const filteredAssignments = sortedAssignments.filter((assignment) => {
+    if (filter === 'active') {
+      return !assignment.completed
+    }
+
+    if (filter === 'completed') {
+      return assignment.completed
+    }
+
+    return true
   })
 
   return (
@@ -275,12 +288,37 @@ function App() {
 
         <section className="assignment-section" aria-labelledby="pending-title">
           <div className="section-heading">
-            <h2 id="pending-title">未提出課題</h2>
-            <span className="assignment-count">{assignmentList.length}件</span>
+            <div className="assignment-section-title">
+              <h2 id="pending-title">課題一覧</h2>
+              <span className="assignment-count">{filteredAssignments.length}件</span>
+            </div>
+            <div className="filter-actions" aria-label="課題フィルター">
+              <button
+                type="button"
+                className={`filter-button${filter === 'all' ? ' filter-button-active' : ''}`}
+                onClick={() => setFilter('all')}
+              >
+                すべて
+              </button>
+              <button
+                type="button"
+                className={`filter-button${filter === 'active' ? ' filter-button-active' : ''}`}
+                onClick={() => setFilter('active')}
+              >
+                未提出
+              </button>
+              <button
+                type="button"
+                className={`filter-button${filter === 'completed' ? ' filter-button-active' : ''}`}
+                onClick={() => setFilter('completed')}
+              >
+                提出済み
+              </button>
+            </div>
           </div>
 
           <div className="assignment-list">
-            {sortedAssignments.map((assignment) => {
+            {filteredAssignments.map((assignment) => {
               const alertStatus = getAssignmentAlertStatus(assignment)
 
               return (
