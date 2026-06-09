@@ -319,6 +319,52 @@
   flex-wrap: wrap;
 }
 
+.assignment-edit-fields {
+  display: grid;
+  gap: 12px;
+  width: min(100%, 460px);
+}
+
+.assignment-edit-field {
+  display: grid;
+  gap: 8px;
+}
+
+.assignment-edit-field span {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.assignment-edit-field input,
+.assignment-edit-field textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font: inherit;
+  color: #0f172a;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.assignment-edit-field input {
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+.assignment-edit-field textarea {
+  min-height: 96px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+
+.assignment-edit-field input:focus,
+.assignment-edit-field textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
 .assignment-item h3 {
   margin: 0;
   font-size: 1.2rem;
@@ -466,6 +512,63 @@
   border-color: #86efac;
   background: #dcfce7;
   color: #15803d;
+}
+
+.edit-button,
+.save-button,
+.cancel-button {
+  border-radius: 999px;
+  padding: 8px 14px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.edit-button {
+  border: 1px solid #dbe4f0;
+  color: #334155;
+  background: #ffffff;
+}
+
+.edit-button:hover {
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.save-button {
+  border: 1px solid #2563eb;
+  color: #ffffff;
+  background: #2563eb;
+}
+
+.save-button:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.cancel-button {
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  background: #ffffff;
+}
+
+.cancel-button:hover {
+  border-color: #94a3b8;
+  color: #334155;
+  background: #f8fafc;
+}
+
+.edit-button:focus-visible,
+.save-button:focus-visible,
+.cancel-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 3px;
 }
 
 .delete-button {

@@ -53,6 +53,18 @@ const formatDeadline = (year, month, day, time) =>
   `${formatDeadlineParts(year, month, day)} ${TIME_INPUT_PATTERN.test(time) ? time : DEFAULT_DEADLINE_TIME}`
 
 const getDeadlineDate = (deadline) => new Date(normalizeDeadline(deadline).replace(' ', 'T'))
+const splitDeadline = (deadline) => {
+  const normalizedDeadline = normalizeDeadline(deadline)
+  const [datePart, timePart = DEFAULT_DEADLINE_TIME] = normalizedDeadline.split(' ')
+  const [year, month, day] = datePart.split('-')
+
+  return {
+    year,
+    month,
+    day,
+    time: TIME_INPUT_PATTERN.test(timePart) ? timePart : DEFAULT_DEADLINE_TIME,
+  }
+}
 
 const getAssignmentAlertStatus = (assignment) => {
   if (assignment.completed) {
@@ -114,6 +126,13 @@ function App() {
   const [time, setTime] = useState(DEFAULT_DEADLINE_TIME)
   const [detail, setDetail] = useState('')
   const [filter, setFilter] = useState('all')
+  const [editingAssignmentId, setEditingAssignmentId] = useState(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [editingDetail, setEditingDetail] = useState('')
+  const [editingYear, setEditingYear] = useState('')
+  const [editingMonth, setEditingMonth] = useState('')
+  const [editingDay, setEditingDay] = useState('')
+  const [editingTime, setEditingTime] = useState(DEFAULT_DEADLINE_TIME)
 
   useEffect(() => {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
@@ -176,6 +195,51 @@ function App() {
         return assignment
       })
     )
+  }
+
+  const handleStartEditing = (assignment) => {
+    const { year, month, day, time } = splitDeadline(assignment.deadline)
+
+    setEditingAssignmentId(assignment.id)
+    setEditingTitle(assignment.title)
+    setEditingDetail(assignment.detail)
+    setEditingYear(year)
+    setEditingMonth(month)
+    setEditingDay(day)
+    setEditingTime(time)
+  }
+
+  const handleCancelEditing = () => {
+    setEditingAssignmentId(null)
+    setEditingTitle('')
+    setEditingDetail('')
+    setEditingYear('')
+    setEditingMonth('')
+    setEditingDay('')
+    setEditingTime(DEFAULT_DEADLINE_TIME)
+  }
+
+  const handleSaveEditing = (assignmentId) => {
+    if (!editingTitle.trim() || !editingYear || !editingMonth || !editingDay) {
+      return
+    }
+
+    setAssignmentList((currentAssignments) =>
+      currentAssignments.map((assignment) => {
+        if (assignment.id === assignmentId) {
+          return {
+            ...assignment,
+            title: editingTitle.trim(),
+            detail: editingDetail.trim(),
+            deadline: formatDeadline(editingYear, editingMonth, editingDay, editingTime),
+          }
+        }
+
+        return assignment
+      })
+    )
+
+    handleCancelEditing()
   }
 
   const sortedAssignments = [...assignmentList].sort((leftAssignment, rightAssignment) => {
@@ -320,6 +384,7 @@ function App() {
           <div className="assignment-list">
             {filteredAssignments.map((assignment) => {
               const alertStatus = getAssignmentAlertStatus(assignment)
+              const isEditing = editingAssignmentId === assignment.id
 
               return (
                 <article
@@ -328,7 +393,68 @@ function App() {
                 >
                   <div className="assignment-item-header">
                     <div className="assignment-item-title-group">
-                      <h3>{assignment.title}</h3>
+                      {isEditing ? (
+                        <div className="assignment-edit-fields">
+                          <label className="assignment-edit-field">
+                            <span>課題名</span>
+                            <input
+                              type="text"
+                              value={editingTitle}
+                              onChange={(event) => setEditingTitle(event.target.value)}
+                            />
+                          </label>
+                          <label className="assignment-edit-field">
+                            <span>締切日</span>
+                            <div className="date-fields" role="group" aria-label="編集用締切日">
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={editingYear}
+                                onChange={(event) =>
+                                  setEditingYear(event.target.value.replace(/\D/g, '').slice(0, 4))
+                                }
+                              />
+                              <span className="date-field-unit">年</span>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={editingMonth}
+                                onChange={(event) =>
+                                  setEditingMonth(event.target.value.replace(/\D/g, '').slice(0, 2))
+                                }
+                              />
+                              <span className="date-field-unit">月</span>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                value={editingDay}
+                                onChange={(event) =>
+                                  setEditingDay(event.target.value.replace(/\D/g, '').slice(0, 2))
+                                }
+                              />
+                              <span className="date-field-unit">日</span>
+                            </div>
+                          </label>
+                          <label className="assignment-edit-field">
+                            <span>締切時間</span>
+                            <input
+                              type="time"
+                              value={editingTime}
+                              onChange={(event) => setEditingTime(event.target.value)}
+                            />
+                          </label>
+                          <label className="assignment-edit-field">
+                            <span>詳細</span>
+                            <textarea
+                              value={editingDetail}
+                              onChange={(event) => setEditingDetail(event.target.value)}
+                              placeholder="提出先、課題内容、メモなど"
+                            />
+                          </label>
+                        </div>
+                      ) : (
+                        <h3>{assignment.title}</h3>
+                      )}
                       <div className="assignment-item-badges">
                         {assignment.completed && <span className="completed-badge">提出済み</span>}
                         {alertStatus === 'urgent' && <span className="urgent-badge">締切間近</span>}
@@ -336,27 +462,57 @@ function App() {
                       </div>
                     </div>
                     <div className="assignment-item-actions">
-                      <button
-                        type="button"
-                        className={`toggle-button${assignment.completed ? ' toggle-button-completed' : ''}`}
-                        onClick={() => handleToggleCompleted(assignment)}
-                      >
-                        {assignment.completed ? '未提出に戻す' : '提出済みにする'}
-                      </button>
-                      <button
-                        type="button"
-                        className="delete-button"
-                        onClick={() => handleDeleteAssignment(assignment)}
-                      >
-                        削除
-                      </button>
+                      {isEditing ? (
+                        <>
+                          <button
+                            type="button"
+                            className="save-button"
+                            onClick={() => handleSaveEditing(assignment.id)}
+                          >
+                            保存
+                          </button>
+                          <button
+                            type="button"
+                            className="cancel-button"
+                            onClick={handleCancelEditing}
+                          >
+                            キャンセル
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button
+                            type="button"
+                            className="edit-button"
+                            onClick={() => handleStartEditing(assignment)}
+                          >
+                            編集
+                          </button>
+                          <button
+                            type="button"
+                            className={`toggle-button${assignment.completed ? ' toggle-button-completed' : ''}`}
+                            onClick={() => handleToggleCompleted(assignment)}
+                          >
+                            {assignment.completed ? '未提出に戻す' : '提出済みにする'}
+                          </button>
+                          <button
+                            type="button"
+                            className="delete-button"
+                            onClick={() => handleDeleteAssignment(assignment)}
+                          >
+                            削除
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                   <p className="assignment-deadline">
                     <span className="assignment-deadline-label">締切：</span>
                     <span className="assignment-deadline-value">{assignment.deadline}</span>
                   </p>
-                  {assignment.detail && <p className="assignment-detail">{assignment.detail}</p>}
+                  {!isEditing && assignment.detail && (
+                    <p className="assignment-detail">{assignment.detail}</p>
+                  )}
                 </article>
               )
             })}
