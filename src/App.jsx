@@ -145,6 +145,33 @@ function App() {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
   }, [assignmentList])
 
+  useEffect(() => {
+    if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+      return
+    }
+
+    const overdueAssignments = assignmentList.filter(
+      (assignment) => getAssignmentAlertStatus(assignment) === 'overdue'
+    )
+
+    if (overdueAssignments.length > 0) {
+      new Notification('課題リマインダー', {
+        body: `期限切れ課題が${overdueAssignments.length}件あります`,
+      })
+      return
+    }
+
+    const urgentAssignments = assignmentList.filter(
+      (assignment) => getAssignmentAlertStatus(assignment) === 'urgent'
+    )
+
+    if (urgentAssignments.length > 0) {
+      new Notification('課題リマインダー', {
+        body: `締切間近の課題が${urgentAssignments.length}件あります`,
+      })
+    }
+  }, [])
+
   const handleRequestNotificationPermission = async () => {
     if (typeof Notification === 'undefined') {
       setNotificationPermission('unsupported')
