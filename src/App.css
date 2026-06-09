@@ -24,6 +24,13 @@
   margin-bottom: 32px;
 }
 
+.app-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
 .app-label {
   margin-bottom: 8px;
   font-size: 14px;
@@ -36,6 +43,21 @@
   margin: 0;
   font-size: clamp(2rem, 4vw, 2.75rem);
   color: #0f172a;
+}
+
+.session-info {
+  display: grid;
+  gap: 10px;
+  justify-items: end;
+}
+
+.session-email {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  word-break: break-all;
+  text-align: right;
 }
 
 .add-button {
@@ -63,6 +85,57 @@
 .add-button:focus-visible {
   outline: 3px solid rgba(37, 99, 235, 0.25);
   outline-offset: 3px;
+}
+
+.logout-button {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.logout-button:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
+.logout-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 3px;
+}
+
+.login-card {
+  width: min(560px, 100%);
+}
+
+.login-section {
+  padding: 28px;
+  border: 1px solid #dbe4f0;
+  border-radius: 20px;
+  background: #f8fbff;
+}
+
+.login-heading {
+  margin-bottom: 20px;
+}
+
+.login-form {
+  display: grid;
+  gap: 16px;
+}
+
+.login-button {
+  justify-self: start;
+  min-width: 140px;
 }
 
 .assignment-form-section {
@@ -711,6 +784,19 @@
     border-radius: 20px;
   }
 
+  .app-header-content {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .session-info {
+    justify-items: start;
+  }
+
+  .session-email {
+    text-align: left;
+  }
+
   .add-button {
     width: 100%;
     justify-content: center;
@@ -741,6 +827,10 @@
   }
 
   .notification-section {
+    padding: 20px;
+  }
+
+  .login-section {
     padding: 20px;
   }
 

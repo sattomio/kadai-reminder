@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import './App.css'
 
 const assignments = [
@@ -6,6 +6,7 @@ const assignments = [
   { id: 'initial-assignment-2', title: '英語課題', deadline: '2026-06-15 23:59' },
 ]
 const ASSIGNMENTS_STORAGE_KEY = 'assignmentList'
+const CURRENT_USER_STORAGE_KEY = 'currentUserEmail'
 const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
 const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
@@ -105,7 +106,43 @@ const getAssignmentSortRank = (assignment) => {
   return 2
 }
 
+const getAssignmentsStorageKey = (email) => `assignments:${email}`
+
+const getStoredLoginEmail = () => localStorage.getItem(CURRENT_USER_STORAGE_KEY) ?? ''
+
+const loadAssignmentsForEmail = (email) => {
+  if (!email) {
+    return []
+  }
+
+  const userAssignmentsKey = getAssignmentsStorageKey(email)
+  const savedAssignments = localStorage.getItem(userAssignmentsKey)
+
+  if (savedAssignments) {
+    try {
+      return normalizeAssignments(JSON.parse(savedAssignments))
+    } catch {
+      return assignments
+    }
+  }
+
+  const legacyAssignments = localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
+
+  if (legacyAssignments) {
+    try {
+      const normalizedLegacyAssignments = normalizeAssignments(JSON.parse(legacyAssignments))
+      localStorage.setItem(userAssignmentsKey, JSON.stringify(normalizedLegacyAssignments))
+      return normalizedLegacyAssignments
+    } catch {
+      return assignments
+    }
+  }
+
+  return assignments
+}
+
 function App() {
+  const assignmentsLoadedRef = useRef(false)
   const [notificationPermission, setNotificationPermission] = useState(() => {
     if (typeof Notification === 'undefined') {
       return 'unsupported'
@@ -113,19 +150,9 @@ function App() {
 
     return Notification.permission
   })
-  const [assignmentList, setAssignmentList] = useState(() => {
-    const savedAssignments = localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
-
-    if (!savedAssignments) {
-      return assignments
-    }
-
-    try {
-      return normalizeAssignments(JSON.parse(savedAssignments))
-    } catch {
-      return assignments
-    }
-  })
+  const [currentUserEmail, setCurrentUserEmail] = useState(() => getStoredLoginEmail())
+  const [loginEmail, setLoginEmail] = useState(() => getStoredLoginEmail())
+  const [assignmentList, setAssignmentList] = useState(() => loadAssignmentsForEmail(getStoredLoginEmail()))
   const [taskTitle, setTaskTitle] = useState('')
   const [year, setYear] = useState('')
   const [month, setMonth] = useState('')
@@ -142,8 +169,25 @@ function App() {
   const [editingTime, setEditingTime] = useState(DEFAULT_DEADLINE_TIME)
 
   useEffect(() => {
-    localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
-  }, [assignmentList])
+    assignmentsLoadedRef.current = false
+    setAssignmentList(loadAssignmentsForEmail(currentUserEmail))
+  }, [currentUserEmail])
+
+  useEffect(() => {
+    if (!currentUserEmail) {
+      return
+    }
+
+    if (!assignmentsLoadedRef.current) {
+      assignmentsLoadedRef.current = true
+      return
+    }
+
+    localStorage.setItem(
+      getAssignmentsStorageKey(currentUserEmail),
+      JSON.stringify(assignmentList)
+    )
+  }, [assignmentList, currentUserEmail])
 
   useEffect(() => {
     if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
@@ -190,6 +234,34 @@ function App() {
     new Notification('課題リマインダー', {
       body: '通知機能のテストです',
     })
+  }
+
+  const handleLogin = () => {
+    const normalizedEmail = loginEmail.trim().toLowerCase()
+
+    if (!normalizedEmail) {
+      return
+    }
+
+    localStorage.setItem(CURRENT_USER_STORAGE_KEY, normalizedEmail)
+    setCurrentUserEmail(normalizedEmail)
+    setLoginEmail(normalizedEmail)
+    handleCancelEditing()
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem(CURRENT_USER_STORAGE_KEY)
+    setCurrentUserEmail('')
+    setLoginEmail('')
+    setAssignmentList([])
+    setTaskTitle('')
+    setYear('')
+    setMonth('')
+    setDay('')
+    setTime(DEFAULT_DEADLINE_TIME)
+    setDetail('')
+    setFilter('all')
+    handleCancelEditing()
   }
 
   const handleYearChange = (event) => {
@@ -319,13 +391,57 @@ function App() {
     return true
   })
 
+  if (!currentUserEmail) {
+    return (
+      <main className="app">
+        <section className="app-card login-card">
+          <header className="app-header">
+            <div>
+              <p className="app-label">課題管理</p>
+              <h1>課題リマインダー</h1>
+            </div>
+          </header>
+
+          <section className="login-section" aria-labelledby="login-title">
+            <div className="section-heading login-heading">
+              <h2 id="login-title">ログイン</h2>
+            </div>
+            <div className="login-form">
+              <label className="form-field">
+                <span>メールアドレス</span>
+                <input
+                  type="email"
+                  name="loginEmail"
+                  placeholder="satto@example.com"
+                  value={loginEmail}
+                  onChange={(event) => setLoginEmail(event.target.value)}
+                />
+              </label>
+              <button type="button" className="add-button login-button" onClick={handleLogin}>
+                ログイン
+              </button>
+            </div>
+          </section>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <main className="app">
       <section className="app-card">
         <header className="app-header">
-          <div>
-            <p className="app-label">課題管理</p>
-            <h1>課題リマインダー</h1>
+          <div className="app-header-content">
+            <div>
+              <p className="app-label">課題管理</p>
+              <h1>課題リマインダー</h1>
+            </div>
+            <div className="session-info">
+              <p className="session-email">{currentUserEmail}</p>
+              <button type="button" className="logout-button" onClick={handleLogout}>
+                ログアウト
+              </button>
+            </div>
           </div>
         </header>
 
