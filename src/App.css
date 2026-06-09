@@ -77,6 +77,91 @@
   margin-bottom: 20px;
 }
 
+.notification-section {
+  margin-bottom: 24px;
+  padding: 28px;
+  border: 1px solid #dbe4f0;
+  border-radius: 20px;
+  background: #f8fbff;
+}
+
+.notification-heading {
+  margin-bottom: 20px;
+}
+
+.notification-panel {
+  display: grid;
+  gap: 16px;
+}
+
+.notification-status {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.notification-status-granted {
+  color: #166534;
+}
+
+.notification-status-denied {
+  color: #b91c1c;
+}
+
+.notification-status-unsupported {
+  color: #7c3aed;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.notification-button {
+  border: 1px solid #2563eb;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #ffffff;
+  background: #2563eb;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.notification-button:hover {
+  border-color: #1d4ed8;
+  background: #1d4ed8;
+}
+
+.notification-button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.2);
+  outline-offset: 3px;
+}
+
+.notification-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.notification-button-secondary {
+  border-color: #cbd5e1;
+  color: #334155;
+  background: #ffffff;
+}
+
+.notification-button-secondary:hover:not(:disabled) {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  background: #eff6ff;
+}
+
 .assignment-form {
   display: grid;
   grid-template-columns: minmax(0, 1.6fr) minmax(180px, 0.7fr);
@@ -652,6 +737,10 @@
   }
 
   .assignment-section {
+    padding: 20px;
+  }
+
+  .notification-section {
     padding: 20px;
   }
 

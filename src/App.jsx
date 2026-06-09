@@ -106,6 +106,13 @@ const getAssignmentSortRank = (assignment) => {
 }
 
 function App() {
+  const [notificationPermission, setNotificationPermission] = useState(() => {
+    if (typeof Notification === 'undefined') {
+      return 'unsupported'
+    }
+
+    return Notification.permission
+  })
   const [assignmentList, setAssignmentList] = useState(() => {
     const savedAssignments = localStorage.getItem(ASSIGNMENTS_STORAGE_KEY)
 
@@ -137,6 +144,26 @@ function App() {
   useEffect(() => {
     localStorage.setItem(ASSIGNMENTS_STORAGE_KEY, JSON.stringify(assignmentList))
   }, [assignmentList])
+
+  const handleRequestNotificationPermission = async () => {
+    if (typeof Notification === 'undefined') {
+      setNotificationPermission('unsupported')
+      return
+    }
+
+    const permission = await Notification.requestPermission()
+    setNotificationPermission(permission)
+  }
+
+  const handleSendTestNotification = () => {
+    if (notificationPermission !== 'granted' || typeof Notification === 'undefined') {
+      return
+    }
+
+    new Notification('課題リマインダー', {
+      body: '通知機能のテストです',
+    })
+  }
 
   const handleYearChange = (event) => {
     setYear(event.target.value.replace(/\D/g, '').slice(0, 4))
@@ -274,6 +301,47 @@ function App() {
             <h1>課題リマインダー</h1>
           </div>
         </header>
+
+        <section className="notification-section" aria-labelledby="notification-title">
+          <div className="section-heading notification-heading">
+            <h2 id="notification-title">通知設定</h2>
+          </div>
+          <div className="notification-panel">
+            <p
+              className={`notification-status${
+                notificationPermission === 'granted'
+                  ? ' notification-status-granted'
+                  : notificationPermission === 'denied'
+                    ? ' notification-status-denied'
+                    : notificationPermission === 'unsupported'
+                      ? ' notification-status-unsupported'
+                      : ''
+              }`}
+            >
+              {notificationPermission === 'granted' && '通知は許可されています'}
+              {notificationPermission === 'denied' && '通知は拒否されています'}
+              {notificationPermission === 'default' && '通知はまだ許可されていません'}
+              {notificationPermission === 'unsupported' && 'このブラウザでは通知を利用できません'}
+            </p>
+            <div className="notification-actions">
+              <button
+                type="button"
+                className="notification-button"
+                onClick={handleRequestNotificationPermission}
+              >
+                通知を許可
+              </button>
+              <button
+                type="button"
+                className="notification-button notification-button-secondary"
+                onClick={handleSendTestNotification}
+                disabled={notificationPermission !== 'granted'}
+              >
+                テスト通知
+              </button>
+            </div>
+          </div>
+        </section>
 
         <section className="assignment-form-section" aria-labelledby="assignment-form-title">
           <div className="section-heading assignment-form-heading">
