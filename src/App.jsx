@@ -7,6 +7,7 @@ const assignments = [
 ]
 const ASSIGNMENTS_STORAGE_KEY = 'assignmentList'
 const CURRENT_USER_STORAGE_KEY = 'currentUserEmail'
+const LOCAL_USERS_STORAGE_KEY = 'localUsers'
 const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
 const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
@@ -110,6 +111,24 @@ const getAssignmentsStorageKey = (email) => `assignments:${email}`
 
 const getStoredLoginEmail = () => localStorage.getItem(CURRENT_USER_STORAGE_KEY) ?? ''
 
+const getLocalUsers = () => {
+  const savedUsers = localStorage.getItem(LOCAL_USERS_STORAGE_KEY)
+
+  if (!savedUsers) {
+    return {}
+  }
+
+  try {
+    return JSON.parse(savedUsers)
+  } catch {
+    return {}
+  }
+}
+
+const saveLocalUsers = (users) => {
+  localStorage.setItem(LOCAL_USERS_STORAGE_KEY, JSON.stringify(users))
+}
+
 const loadAssignmentsForEmail = (email) => {
   if (!email) {
     return []
@@ -151,7 +170,13 @@ function App() {
     return Notification.permission
   })
   const [currentUserEmail, setCurrentUserEmail] = useState(() => getStoredLoginEmail())
+  const [authMode, setAuthMode] = useState('login')
   const [loginEmail, setLoginEmail] = useState(() => getStoredLoginEmail())
+  const [loginPassword, setLoginPassword] = useState('')
+  const [registerEmail, setRegisterEmail] = useState('')
+  const [registerPassword, setRegisterPassword] = useState('')
+  const [registerPasswordConfirm, setRegisterPasswordConfirm] = useState('')
+  const [authError, setAuthError] = useState('')
   const [assignmentList, setAssignmentList] = useState(() => loadAssignmentsForEmail(getStoredLoginEmail()))
   const [taskTitle, setTaskTitle] = useState('')
   const [year, setYear] = useState('')
@@ -238,14 +263,65 @@ function App() {
 
   const handleLogin = () => {
     const normalizedEmail = loginEmail.trim().toLowerCase()
+    const trimmedPassword = loginPassword.trim()
 
-    if (!normalizedEmail) {
+    if (!normalizedEmail || !trimmedPassword) {
+      setAuthError('メールアドレスとパスワードを入力してください')
+      return
+    }
+
+    const users = getLocalUsers()
+
+    if (!users[normalizedEmail] || users[normalizedEmail].password !== trimmedPassword) {
+      setAuthError('メールアドレスまたはパスワードが正しくありません')
       return
     }
 
     localStorage.setItem(CURRENT_USER_STORAGE_KEY, normalizedEmail)
     setCurrentUserEmail(normalizedEmail)
     setLoginEmail(normalizedEmail)
+    setLoginPassword('')
+    setAuthError('')
+    handleCancelEditing()
+  }
+
+  const handleRegister = () => {
+    const normalizedEmail = registerEmail.trim().toLowerCase()
+    const trimmedPassword = registerPassword.trim()
+    const trimmedPasswordConfirm = registerPasswordConfirm.trim()
+
+    if (!normalizedEmail || !trimmedPassword || !trimmedPasswordConfirm) {
+      setAuthError('メールアドレスとパスワードをすべて入力してください')
+      return
+    }
+
+    if (trimmedPassword !== trimmedPasswordConfirm) {
+      setAuthError('パスワード確認が一致しません')
+      return
+    }
+
+    const users = getLocalUsers()
+
+    if (users[normalizedEmail]) {
+      setAuthError('このメールアドレスは既に登録されています')
+      return
+    }
+
+    saveLocalUsers({
+      ...users,
+      [normalizedEmail]: {
+        password: trimmedPassword,
+      },
+    })
+
+    localStorage.setItem(CURRENT_USER_STORAGE_KEY, normalizedEmail)
+    setCurrentUserEmail(normalizedEmail)
+    setLoginEmail(normalizedEmail)
+    setLoginPassword('')
+    setRegisterEmail('')
+    setRegisterPassword('')
+    setRegisterPasswordConfirm('')
+    setAuthError('')
     handleCancelEditing()
   }
 
@@ -253,6 +329,12 @@ function App() {
     localStorage.removeItem(CURRENT_USER_STORAGE_KEY)
     setCurrentUserEmail('')
     setLoginEmail('')
+    setLoginPassword('')
+    setRegisterEmail('')
+    setRegisterPassword('')
+    setRegisterPasswordConfirm('')
+    setAuthError('')
+    setAuthMode('login')
     setAssignmentList([])
     setTaskTitle('')
     setYear('')
@@ -404,22 +486,98 @@ function App() {
 
           <section className="login-section" aria-labelledby="login-title">
             <div className="section-heading login-heading">
-              <h2 id="login-title">ログイン</h2>
+              <div className="login-heading-content">
+                <h2 id="login-title">{authMode === 'register' ? '新規登録' : 'ログイン'}</h2>
+                <div className="auth-mode-actions">
+                  <button
+                    type="button"
+                    className={`filter-button${authMode === 'login' ? ' filter-button-active' : ''}`}
+                    onClick={() => {
+                      setAuthMode('login')
+                      setAuthError('')
+                    }}
+                  >
+                    ログイン
+                  </button>
+                  <button
+                    type="button"
+                    className={`filter-button${authMode === 'register' ? ' filter-button-active' : ''}`}
+                    onClick={() => {
+                      setAuthMode('register')
+                      setAuthError('')
+                    }}
+                  >
+                    新規登録
+                  </button>
+                </div>
+              </div>
             </div>
             <div className="login-form">
-              <label className="form-field">
-                <span>メールアドレス</span>
-                <input
-                  type="email"
-                  name="loginEmail"
-                  placeholder="satto@example.com"
-                  value={loginEmail}
-                  onChange={(event) => setLoginEmail(event.target.value)}
-                />
-              </label>
-              <button type="button" className="add-button login-button" onClick={handleLogin}>
-                ログイン
-              </button>
+              {authMode === 'register' ? (
+                <>
+                  <label className="form-field">
+                    <span>メールアドレス</span>
+                    <input
+                      type="email"
+                      name="registerEmail"
+                      placeholder="satto@example.com"
+                      value={registerEmail}
+                      onChange={(event) => setRegisterEmail(event.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>パスワード</span>
+                    <input
+                      type="password"
+                      name="registerPassword"
+                      value={registerPassword}
+                      onChange={(event) => setRegisterPassword(event.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>パスワード確認</span>
+                    <input
+                      type="password"
+                      name="registerPasswordConfirm"
+                      value={registerPasswordConfirm}
+                      onChange={(event) => setRegisterPasswordConfirm(event.target.value)}
+                    />
+                  </label>
+                  {authError && <p className="auth-error">{authError}</p>}
+                  <button type="button" className="add-button login-button" onClick={handleRegister}>
+                    新規登録
+                  </button>
+                </>
+              ) : (
+                <>
+                  <label className="form-field">
+                    <span>メールアドレス</span>
+                    <input
+                      type="email"
+                      name="loginEmail"
+                      placeholder="satto@example.com"
+                      value={loginEmail}
+                      onChange={(event) => setLoginEmail(event.target.value)}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>パスワード</span>
+                    <input
+                      type="password"
+                      name="loginPassword"
+                      value={loginPassword}
+                      onChange={(event) => setLoginPassword(event.target.value)}
+                    />
+                  </label>
+                  {authError && <p className="auth-error">{authError}</p>}
+                  <button type="button" className="add-button login-button" onClick={handleLogin}>
+                    ログイン
+                  </button>
+                </>
+              )}
+              <p className="auth-note">
+                このログインは端末内だけで使う簡易機能です。本物の安全な認証ではありません。
+              </p>
             </div>
           </section>
         </section>
