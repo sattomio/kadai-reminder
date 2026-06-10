@@ -12,6 +12,7 @@ const DATE_INPUT_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
 const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
 const DEFAULT_DEADLINE_TIME = '23:59'
+const SUBJECT_TAG_OPTIONS = ['経済学', '英語', '中国語', '統計学']
 
 const createAssignmentId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -46,6 +47,7 @@ const normalizeAssignments = (items) =>
     deadline: normalizeDeadline(assignment.deadline),
     completed: assignment.completed ?? false,
     detail: assignment.detail ?? '',
+    subjectTag: assignment.subjectTag ?? '',
   }))
 
 const formatDeadlineParts = (year, month, day) =>
@@ -105,6 +107,39 @@ const getAssignmentSortRank = (assignment) => {
   }
 
   return 2
+}
+
+const parseSubjectTag = (subjectTag) => {
+  if (!subjectTag) {
+    return {
+      option: '',
+      customValue: '',
+    }
+  }
+
+  if (SUBJECT_TAG_OPTIONS.includes(subjectTag)) {
+    return {
+      option: subjectTag,
+      customValue: '',
+    }
+  }
+
+  return {
+    option: 'その他',
+    customValue: subjectTag,
+  }
+}
+
+const buildSubjectTag = (selectedOption, customValue) => {
+  if (!selectedOption) {
+    return ''
+  }
+
+  if (selectedOption === 'その他') {
+    return customValue.trim()
+  }
+
+  return selectedOption
 }
 
 const getAssignmentsStorageKey = (email) => `assignments:${email}`
@@ -184,10 +219,14 @@ function App() {
   const [day, setDay] = useState('')
   const [time, setTime] = useState(DEFAULT_DEADLINE_TIME)
   const [detail, setDetail] = useState('')
+  const [subjectTagOption, setSubjectTagOption] = useState('')
+  const [customSubjectTag, setCustomSubjectTag] = useState('')
   const [filter, setFilter] = useState('all')
   const [editingAssignmentId, setEditingAssignmentId] = useState(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingDetail, setEditingDetail] = useState('')
+  const [editingSubjectTagOption, setEditingSubjectTagOption] = useState('')
+  const [editingCustomSubjectTag, setEditingCustomSubjectTag] = useState('')
   const [editingYear, setEditingYear] = useState('')
   const [editingMonth, setEditingMonth] = useState('')
   const [editingDay, setEditingDay] = useState('')
@@ -373,6 +412,7 @@ function App() {
       deadline: formatDeadline(year, month, day, time),
       completed: false,
       detail: detail.trim(),
+      subjectTag: buildSubjectTag(subjectTagOption, customSubjectTag),
     }
 
     setAssignmentList((currentAssignments) => [...currentAssignments, newAssignment])
@@ -382,6 +422,8 @@ function App() {
     setDay('')
     setTime(DEFAULT_DEADLINE_TIME)
     setDetail('')
+    setSubjectTagOption('')
+    setCustomSubjectTag('')
   }
 
   const handleDeleteAssignment = (assignmentToDelete) => {
@@ -407,10 +449,13 @@ function App() {
 
   const handleStartEditing = (assignment) => {
     const { year, month, day, time } = splitDeadline(assignment.deadline)
+    const { option, customValue } = parseSubjectTag(assignment.subjectTag)
 
     setEditingAssignmentId(assignment.id)
     setEditingTitle(assignment.title)
     setEditingDetail(assignment.detail)
+    setEditingSubjectTagOption(option)
+    setEditingCustomSubjectTag(customValue)
     setEditingYear(year)
     setEditingMonth(month)
     setEditingDay(day)
@@ -421,6 +466,8 @@ function App() {
     setEditingAssignmentId(null)
     setEditingTitle('')
     setEditingDetail('')
+    setEditingSubjectTagOption('')
+    setEditingCustomSubjectTag('')
     setEditingYear('')
     setEditingMonth('')
     setEditingDay('')
@@ -439,6 +486,7 @@ function App() {
             ...assignment,
             title: editingTitle.trim(),
             detail: editingDetail.trim(),
+            subjectTag: buildSubjectTag(editingSubjectTagOption, editingCustomSubjectTag),
             deadline: formatDeadline(editingYear, editingMonth, editingDay, editingTime),
           }
         }
@@ -699,6 +747,32 @@ function App() {
               <input type="time" name="time" value={time} onChange={handleTimeChange} />
             </label>
 
+            <label className="form-field subject-tag-field">
+              <span>教科タグ</span>
+              <select
+                name="subjectTag"
+                value={subjectTagOption}
+                onChange={(event) => setSubjectTagOption(event.target.value)}
+              >
+                <option value="">未選択</option>
+                {SUBJECT_TAG_OPTIONS.map((tagOption) => (
+                  <option key={tagOption} value={tagOption}>
+                    {tagOption}
+                  </option>
+                ))}
+                <option value="その他">その他</option>
+              </select>
+              {subjectTagOption === 'その他' && (
+                <input
+                  type="text"
+                  name="customSubjectTag"
+                  placeholder="教科タグを入力"
+                  value={customSubjectTag}
+                  onChange={(event) => setCustomSubjectTag(event.target.value)}
+                />
+              )}
+            </label>
+
             <label className="form-field detail-field">
               <span>詳細</span>
               <textarea
@@ -813,6 +887,29 @@ function App() {
                             />
                           </label>
                           <label className="assignment-edit-field">
+                            <span>教科タグ</span>
+                            <select
+                              value={editingSubjectTagOption}
+                              onChange={(event) => setEditingSubjectTagOption(event.target.value)}
+                            >
+                              <option value="">未選択</option>
+                              {SUBJECT_TAG_OPTIONS.map((tagOption) => (
+                                <option key={tagOption} value={tagOption}>
+                                  {tagOption}
+                                </option>
+                              ))}
+                              <option value="その他">その他</option>
+                            </select>
+                            {editingSubjectTagOption === 'その他' && (
+                              <input
+                                type="text"
+                                placeholder="教科タグを入力"
+                                value={editingCustomSubjectTag}
+                                onChange={(event) => setEditingCustomSubjectTag(event.target.value)}
+                              />
+                            )}
+                          </label>
+                          <label className="assignment-edit-field">
                             <span>詳細</span>
                             <textarea
                               value={editingDetail}
@@ -825,6 +922,7 @@ function App() {
                         <h3>{assignment.title}</h3>
                       )}
                       <div className="assignment-item-badges">
+                        {assignment.subjectTag && <span className="subject-tag-badge">{assignment.subjectTag}</span>}
                         {assignment.completed && <span className="completed-badge">提出済み</span>}
                         {alertStatus === 'urgent' && <span className="urgent-badge">締切間近</span>}
                         {alertStatus === 'overdue' && <span className="overdue-badge">期限切れ</span>}
