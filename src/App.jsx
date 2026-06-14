@@ -199,6 +199,10 @@ const loadAssignmentsForEmail = (email) => {
 
 function App() {
   const assignmentsLoadedRef = useRef(false)
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const today = new Date()
+    return new Date(today.getFullYear(), today.getMonth(), 1)
+  })
   const [notificationPermission, setNotificationPermission] = useState(() => {
     if (typeof Notification === 'undefined') {
       return 'unsupported'
@@ -541,16 +545,18 @@ function App() {
     return true
   })
 
-  const now = new Date()
-  const currentYear = now.getFullYear()
-  const currentMonthIndex = now.getMonth()
+  const today = new Date()
+  const displayYear = calendarMonth.getFullYear()
+  const displayMonthIndex = calendarMonth.getMonth()
+  const isDisplayingCurrentMonth =
+    displayYear === today.getFullYear() && displayMonthIndex === today.getMonth()
   const todayDateKey = formatDeadlineParts(
-    String(currentYear),
-    String(currentMonthIndex + 1),
-    String(now.getDate())
+    String(today.getFullYear()),
+    String(today.getMonth() + 1),
+    String(today.getDate())
   )
-  const monthStartDate = new Date(currentYear, currentMonthIndex, 1)
-  const daysInCurrentMonth = new Date(currentYear, currentMonthIndex + 1, 0).getDate()
+  const monthStartDate = new Date(displayYear, displayMonthIndex, 1)
+  const daysInCurrentMonth = new Date(displayYear, displayMonthIndex + 1, 0).getDate()
   const leadingBlankDays = monthStartDate.getDay()
   const calendarAssignmentsByDate = assignmentList
     .filter((assignment) => {
@@ -561,8 +567,8 @@ function App() {
       const deadlineDate = getDeadlineDate(assignment.deadline)
 
       return (
-        deadlineDate.getFullYear() === currentYear &&
-        deadlineDate.getMonth() === currentMonthIndex
+        deadlineDate.getFullYear() === displayYear &&
+        deadlineDate.getMonth() === displayMonthIndex
       )
     })
     .sort((leftAssignment, rightAssignment) => {
@@ -591,8 +597,8 @@ function App() {
     }
 
     const dateKey = formatDeadlineParts(
-      String(currentYear),
-      String(currentMonthIndex + 1),
+      String(displayYear),
+      String(displayMonthIndex + 1),
       String(dayNumber)
     )
 
@@ -601,7 +607,7 @@ function App() {
       dayNumber,
       dateKey,
       isCurrentMonth: true,
-      isToday: dateKey === todayDateKey,
+      isToday: isDisplayingCurrentMonth && dateKey === todayDateKey,
       assignments: calendarAssignmentsByDate[dateKey] ?? [],
     }
   })
@@ -939,10 +945,26 @@ function App() {
 
           <section className="calendar-section" aria-labelledby="calendar-title">
             <div className="calendar-section-header">
-              <div>
-                <h3 id="calendar-title">{currentYear}年{currentMonthIndex + 1}月の締切</h3>
+              <button
+                type="button"
+                className="calendar-nav-button"
+                onClick={() => setCalendarMonth(new Date(displayYear, displayMonthIndex - 1, 1))}
+                aria-label="前月を表示"
+              >
+                ＜
+              </button>
+              <div className="calendar-title-group">
+                <h3 id="calendar-title">{displayYear}年{displayMonthIndex + 1}月の締切</h3>
                 <p className="calendar-caption">未提出の課題だけを表示しています</p>
               </div>
+              <button
+                type="button"
+                className="calendar-nav-button"
+                onClick={() => setCalendarMonth(new Date(displayYear, displayMonthIndex + 1, 1))}
+                aria-label="翌月を表示"
+              >
+                ＞
+              </button>
             </div>
             <div className="calendar-grid" role="grid" aria-label="今月の課題カレンダー">
               {CALENDAR_WEEKDAYS.map((weekday) => (
