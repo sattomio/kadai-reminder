@@ -19,8 +19,8 @@
 }
 
 .app-card {
-  width: min(720px, 100%);
-  padding: 36px;
+  width: min(840px, 100%);
+  padding: 32px;
   border: 1px solid #d8e8f3;
   border-radius: 32px;
   background:
@@ -542,7 +542,7 @@
 
 .calendar-section {
   margin-bottom: 20px;
-  padding: 22px;
+  padding: 24px 18px;
   border: 1px solid #d7e7f2;
   border-radius: 24px;
   background: linear-gradient(180deg, #ffffff 0%, #f6fbff 100%);
@@ -612,7 +612,7 @@
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .calendar-weekday {
@@ -627,8 +627,8 @@
 }
 
 .calendar-day {
-  min-height: 120px;
-  padding: 12px 10px;
+  min-height: 132px;
+  padding: 14px 12px;
   border: 1px solid #dbe8f2;
   border-radius: 20px;
   background: linear-gradient(180deg, #ffffff 0%, #fafdff 100%);
@@ -663,8 +663,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   font-size: 0.98rem;
   font-weight: 700;
@@ -694,22 +694,113 @@
 
 .calendar-day-assignments {
   display: grid;
-  gap: 6px;
+  gap: 8px;
 }
 
 .calendar-assignment-chip {
-  display: block;
-  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 7px 10px;
   border-radius: 12px;
   border: 1px solid #cbe6f4;
   background: #f2fbff;
   color: #23425b;
-  font-size: 0.82rem;
+  font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+@media (max-width: 768px) {
+  .app {
+    padding: 18px 10px;
+  }
+
+  .app-card {
+    width: min(100%, 100vw - 20px);
+    padding: 18px 12px;
+  }
+
+  .app-card::before {
+    inset: 8px;
+  }
+
+  .assignment-section {
+    padding: 16px 10px;
+  }
+
+  .calendar-section {
+    width: 100%;
+    padding: 12px 6px 10px;
+    margin-inline: 0;
+  }
+
+  .calendar-section-header {
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .calendar-title-group {
+    min-width: 0;
+  }
+
+  .calendar-section h3 {
+    font-size: 1.05rem;
+  }
+
+  .calendar-caption {
+    font-size: 0.82rem;
+  }
+
+  .calendar-grid {
+    width: 100%;
+    gap: 3px;
+  }
+
+  .calendar-weekday {
+    padding: 5px 1px;
+    font-size: 0.68rem;
+    border-radius: 10px;
+  }
+
+  .calendar-day {
+    min-height: 78px;
+    padding: 6px 4px;
+    border-radius: 12px;
+    gap: 5px;
+    overflow: hidden;
+  }
+
+  .calendar-day-heading {
+    gap: 3px;
+    align-items: flex-start;
+  }
+
+  .calendar-day-number {
+    width: 20px;
+    height: 20px;
+    font-size: 0.7rem;
+  }
+
+  .calendar-today-badge {
+    padding: 2px 4px;
+    font-size: 0.54rem;
+  }
+
+  .calendar-day-assignments {
+    gap: 3px;
+  }
+
+  .calendar-assignment-chip {
+    width: 100%;
+    min-height: 18px;
+    padding: 2px 4px;
+    font-size: 0.62rem;
+    border-radius: 8px;
+  }
 }
 
 .assignment-list {
@@ -1063,12 +1154,17 @@
 
 @media (max-width: 640px) {
   .app {
-    padding: 24px 16px;
+    padding: 12px 6px;
   }
 
   .app-card {
-    padding: 24px;
-    border-radius: 20px;
+    width: min(100%, 100vw - 12px);
+    padding: 14px 8px;
+    border-radius: 18px;
+  }
+
+  .app-card::before {
+    inset: 6px;
   }
 
   .app-header-content {
@@ -1110,46 +1206,55 @@
   }
 
   .assignment-section {
-    padding: 20px;
+    padding: 14px 8px;
   }
 
   .calendar-section {
-    padding: 16px;
+    padding: 10px 4px 8px;
   }
 
   .calendar-grid {
-    gap: 6px;
+    gap: 2px;
   }
 
   .calendar-section-header {
-    gap: 8px;
+    gap: 4px;
   }
 
   .calendar-nav-button {
-    min-width: 40px;
-    height: 40px;
+    min-width: 32px;
+    height: 32px;
+    font-size: 0.88rem;
   }
 
   .calendar-weekday {
-    padding: 8px 4px;
-    font-size: 0.82rem;
+    padding: 4px 1px;
+    font-size: 0.62rem;
   }
 
   .calendar-day {
-    min-height: 92px;
-    padding: 10px 8px;
-    border-radius: 16px;
+    min-height: 72px;
+    padding: 5px 3px;
+    border-radius: 10px;
+    gap: 4px;
   }
 
   .calendar-day-number {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
+    width: 18px;
+    height: 18px;
+    font-size: 0.64rem;
+  }
+
+  .calendar-today-badge {
+    padding: 1px 3px;
+    font-size: 0.5rem;
   }
 
   .calendar-assignment-chip {
-    padding: 5px 6px;
-    font-size: 0.74rem;
+    min-height: 16px;
+    padding: 2px 3px;
+    font-size: 0.58rem;
+    border-radius: 7px;
   }
 
   .notification-section {

@@ -144,6 +144,16 @@ const buildSubjectTag = (selectedOption, customValue) => {
   return selectedOption
 }
 
+const truncateCalendarAssignmentTitle = (title) => {
+  const trimmedTitle = title.trim()
+
+  if (trimmedTitle.length <= 6) {
+    return trimmedTitle
+  }
+
+  return `${trimmedTitle.slice(0, 5)}...`
+}
+
 const getAssignmentsStorageKey = (email) => `assignments:${email}`
 
 const getStoredLoginEmail = () => localStorage.getItem(CURRENT_USER_STORAGE_KEY) ?? ''
@@ -991,7 +1001,7 @@ function App() {
                             className="calendar-assignment-chip"
                             title={assignment.title}
                           >
-                            {assignment.title}
+                            {truncateCalendarAssignmentTitle(assignment.title)}
                           </span>
                         ))}
                       </div>
