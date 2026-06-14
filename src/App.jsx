@@ -13,6 +13,7 @@ const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/
 const TIME_INPUT_PATTERN = /^\d{2}:\d{2}$/
 const DEFAULT_DEADLINE_TIME = '23:59'
 const SUBJECT_TAG_OPTIONS = ['経済学', '英語', '中国語', '統計学']
+const CALENDAR_WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土']
 
 const createAssignmentId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -57,6 +58,7 @@ const formatDeadline = (year, month, day, time) =>
   `${formatDeadlineParts(year, month, day)} ${TIME_INPUT_PATTERN.test(time) ? time : DEFAULT_DEADLINE_TIME}`
 
 const getDeadlineDate = (deadline) => new Date(normalizeDeadline(deadline).replace(' ', 'T'))
+const getDeadlineDateKey = (deadline) => normalizeDeadline(deadline).split(' ')[0]
 const splitDeadline = (deadline) => {
   const normalizedDeadline = normalizeDeadline(deadline)
   const [datePart, timePart = DEFAULT_DEADLINE_TIME] = normalizedDeadline.split(' ')
@@ -539,6 +541,71 @@ function App() {
     return true
   })
 
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonthIndex = now.getMonth()
+  const todayDateKey = formatDeadlineParts(
+    String(currentYear),
+    String(currentMonthIndex + 1),
+    String(now.getDate())
+  )
+  const monthStartDate = new Date(currentYear, currentMonthIndex, 1)
+  const daysInCurrentMonth = new Date(currentYear, currentMonthIndex + 1, 0).getDate()
+  const leadingBlankDays = monthStartDate.getDay()
+  const calendarAssignmentsByDate = assignmentList
+    .filter((assignment) => {
+      if (assignment.completed) {
+        return false
+      }
+
+      const deadlineDate = getDeadlineDate(assignment.deadline)
+
+      return (
+        deadlineDate.getFullYear() === currentYear &&
+        deadlineDate.getMonth() === currentMonthIndex
+      )
+    })
+    .sort((leftAssignment, rightAssignment) => {
+      return getDeadlineDate(leftAssignment.deadline) - getDeadlineDate(rightAssignment.deadline)
+    })
+    .reduce((assignmentMap, assignment) => {
+      const dateKey = getDeadlineDateKey(assignment.deadline)
+
+      if (!assignmentMap[dateKey]) {
+        assignmentMap[dateKey] = []
+      }
+
+      assignmentMap[dateKey].push(assignment)
+      return assignmentMap
+    }, {})
+
+  const calendarCellCount = Math.ceil((leadingBlankDays + daysInCurrentMonth) / 7) * 7
+  const calendarDays = Array.from({ length: calendarCellCount }, (_, index) => {
+    const dayNumber = index - leadingBlankDays + 1
+
+    if (dayNumber < 1 || dayNumber > daysInCurrentMonth) {
+      return {
+        key: `empty-${index}`,
+        isCurrentMonth: false,
+      }
+    }
+
+    const dateKey = formatDeadlineParts(
+      String(currentYear),
+      String(currentMonthIndex + 1),
+      String(dayNumber)
+    )
+
+    return {
+      key: dateKey,
+      dayNumber,
+      dateKey,
+      isCurrentMonth: true,
+      isToday: dateKey === todayDateKey,
+      assignments: calendarAssignmentsByDate[dateKey] ?? [],
+    }
+  })
+
   if (!currentUserEmail) {
     return (
       <main className="app">
@@ -869,6 +936,49 @@ function App() {
               </div>
             </div>
           </div>
+
+          <section className="calendar-section" aria-labelledby="calendar-title">
+            <div className="calendar-section-header">
+              <div>
+                <h3 id="calendar-title">{currentYear}年{currentMonthIndex + 1}月の締切</h3>
+                <p className="calendar-caption">未提出の課題だけを表示しています</p>
+              </div>
+            </div>
+            <div className="calendar-grid" role="grid" aria-label="今月の課題カレンダー">
+              {CALENDAR_WEEKDAYS.map((weekday) => (
+                <div key={weekday} className="calendar-weekday" role="columnheader">
+                  {weekday}
+                </div>
+              ))}
+              {calendarDays.map((calendarDay) => (
+                <div
+                  key={calendarDay.key}
+                  className={`calendar-day${calendarDay.isCurrentMonth ? '' : ' calendar-day-empty'}${calendarDay.isToday ? ' calendar-day-today' : ''}`}
+                  role="gridcell"
+                >
+                  {calendarDay.isCurrentMonth && (
+                    <>
+                      <div className="calendar-day-heading">
+                        <span className="calendar-day-number">{calendarDay.dayNumber}</span>
+                        {calendarDay.isToday && <span className="calendar-today-badge">今日</span>}
+                      </div>
+                      <div className="calendar-day-assignments">
+                        {calendarDay.assignments.map((assignment) => (
+                          <span
+                            key={assignment.id}
+                            className="calendar-assignment-chip"
+                            title={assignment.title}
+                          >
+                            {assignment.title}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
 
           <div className="assignment-list">
             {filteredAssignments.map((assignment) => {
