@@ -222,6 +222,7 @@ function App() {
   const [subjectTagOption, setSubjectTagOption] = useState('')
   const [customSubjectTag, setCustomSubjectTag] = useState('')
   const [filter, setFilter] = useState('all')
+  const [subjectTagFilter, setSubjectTagFilter] = useState('all')
   const [editingAssignmentId, setEditingAssignmentId] = useState(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [editingDetail, setEditingDetail] = useState('')
@@ -382,6 +383,7 @@ function App() {
     setTime(DEFAULT_DEADLINE_TIME)
     setDetail('')
     setFilter('all')
+    setSubjectTagFilter('all')
     handleCancelEditing()
   }
 
@@ -509,7 +511,23 @@ function App() {
     return getDeadlineDate(leftAssignment.deadline) - getDeadlineDate(rightAssignment.deadline)
   })
 
+  const matchesSubjectTagFilter = (assignment) => {
+    if (subjectTagFilter === 'all') {
+      return true
+    }
+
+    if (subjectTagFilter === 'その他') {
+      return assignment.subjectTag !== '' && !SUBJECT_TAG_OPTIONS.includes(assignment.subjectTag)
+    }
+
+    return assignment.subjectTag === subjectTagFilter
+  }
+
   const filteredAssignments = sortedAssignments.filter((assignment) => {
+    if (!matchesSubjectTagFilter(assignment)) {
+      return false
+    }
+
     if (filter === 'active') {
       return !assignment.completed
     }
@@ -799,28 +817,56 @@ function App() {
               <h2 id="pending-title">課題一覧</h2>
               <span className="assignment-count">{filteredAssignments.length}件</span>
             </div>
-            <div className="filter-actions" aria-label="課題フィルター">
-              <button
-                type="button"
-                className={`filter-button${filter === 'all' ? ' filter-button-active' : ''}`}
-                onClick={() => setFilter('all')}
-              >
-                すべて
-              </button>
-              <button
-                type="button"
-                className={`filter-button${filter === 'active' ? ' filter-button-active' : ''}`}
-                onClick={() => setFilter('active')}
-              >
-                未提出
-              </button>
-              <button
-                type="button"
-                className={`filter-button${filter === 'completed' ? ' filter-button-active' : ''}`}
-                onClick={() => setFilter('completed')}
-              >
-                提出済み
-              </button>
+            <div className="filter-panel">
+              <div className="filter-actions" aria-label="課題フィルター">
+                <button
+                  type="button"
+                  className={`filter-button${filter === 'all' ? ' filter-button-active' : ''}`}
+                  onClick={() => setFilter('all')}
+                >
+                  すべて
+                </button>
+                <button
+                  type="button"
+                  className={`filter-button${filter === 'active' ? ' filter-button-active' : ''}`}
+                  onClick={() => setFilter('active')}
+                >
+                  未提出
+                </button>
+                <button
+                  type="button"
+                  className={`filter-button${filter === 'completed' ? ' filter-button-active' : ''}`}
+                  onClick={() => setFilter('completed')}
+                >
+                  提出済み
+                </button>
+              </div>
+              <div className="filter-actions" aria-label="教科タグフィルター">
+                <button
+                  type="button"
+                  className={`filter-button${subjectTagFilter === 'all' ? ' filter-button-active' : ''}`}
+                  onClick={() => setSubjectTagFilter('all')}
+                >
+                  すべて
+                </button>
+                {SUBJECT_TAG_OPTIONS.map((tagOption) => (
+                  <button
+                    key={tagOption}
+                    type="button"
+                    className={`filter-button${subjectTagFilter === tagOption ? ' filter-button-active' : ''}`}
+                    onClick={() => setSubjectTagFilter(tagOption)}
+                  >
+                    {tagOption}
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  className={`filter-button${subjectTagFilter === 'その他' ? ' filter-button-active' : ''}`}
+                  onClick={() => setSubjectTagFilter('その他')}
+                >
+                  その他
+                </button>
+              </div>
             </div>
           </div>
 
